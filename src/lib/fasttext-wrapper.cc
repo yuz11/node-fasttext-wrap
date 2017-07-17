@@ -24,6 +24,8 @@ namespace FastTextWrapper {
   std::shared_ptr<fasttext::Dictionary> dict_ = std::make_shared<fasttext::Dictionary>(args_);
   std::shared_ptr<fasttext::Matrix> input_ = std::make_shared<fasttext::Matrix>();
   std::shared_ptr<fasttext::Matrix> output_ = std::make_shared<fasttext::Matrix>();
+  std::shared_ptr<fasttext::QMatrix> qinput_ = std::make_shared<fasttext::QMatrix>();
+  std::shared_ptr<fasttext::QMatrix> qoutput_ = std::make_shared<fasttext::QMatrix>();
 
   std::shared_ptr<fasttext::Model> model_ = NULL;
 
@@ -93,13 +95,11 @@ namespace FastTextWrapper {
         vec.mul(1.0 / ngrams.size());
       }
 
-      // tmp variable
       std::map<std::string, std::vector<double>> response;
       std::vector<double> arr(vec.size());
       for ( int64_t i = 0; i < vec.size(); i++ )
       {
         arr[i] = vec[i];
-        // std::cout << vec[i] << std::endl;
       }
       
       response[words[i]] = arr;
@@ -199,22 +199,22 @@ namespace FastTextWrapper {
     bool quant_input;
     ifs.read((char*) &quant_input, sizeof(bool));
     if (quant_input) {
-      //TODO
-      //quant_ = true;
-      //qinput_->load(in);
+      qinput_->load(ifs);
     } else {
       input_->load(ifs);
     }
 
     ifs.read((char*) &args_->qout, sizeof(bool));
     if (quant_input && args_->qout) {
-      //TODO
-      //qoutput_->load(in);
+      qoutput_->load(ifs);
     } else {
       output_->load(ifs);
     }
 
     model_ = std::make_shared<fasttext::Model>(input_, output_, args_, 0);
+
+    model_->quant_ = quant_input;
+    model_->setQuantizePointer(qinput_, qoutput_, args_->qout);
 
     if (args_->model == fasttext::model_name::sup) {
       model_->setTargetCounts(dict_->getCounts(fasttext::entry_type::label));

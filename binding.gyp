@@ -7,6 +7,7 @@
         "src/lib/fasttext/src/args.cc",
         "src/lib/fasttext/src/dictionary.cc",
         "src/lib/fasttext/src/matrix.cc",
+		"src/lib/fasttext/src/qmatrix.cc",
         "src/lib/fasttext/src/vector.cc",
         "src/lib/fasttext/src/model.cc",
         "src/lib/fasttext/src/utils.cc",
