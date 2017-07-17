@@ -9,9 +9,11 @@
 
 #include "model.h"
 
-#include <iostream>
 #include <assert.h>
+
 #include <algorithm>
+
+#include "utils.h"
 
 namespace fasttext {
 
@@ -19,12 +21,12 @@ Model::Model(std::shared_ptr<Matrix> wi,
              std::shared_ptr<Matrix> wo,
              std::shared_ptr<Args> args,
              int32_t seed)
-  : hidden_(args->dim), output_(wo->m_),
-  grad_(args->dim), rng(seed), quant_(false)
+  : hidden_(args->dim), output_(wo->m_), grad_(args->dim), rng(seed)
 {
   wi_ = wi;
   wo_ = wo;
   args_ = args;
+  isz_ = wi->m_;
   osz_ = wo->m_;
   hsz_ = args->dim;
   negpos = 0;
@@ -37,15 +39,6 @@ Model::Model(std::shared_ptr<Matrix> wi,
 Model::~Model() {
   delete[] t_sigmoid;
   delete[] t_log;
-}
-
-void Model::setQuantizePointer(std::shared_ptr<QMatrix> qwi,
-                               std::shared_ptr<QMatrix> qwo, bool qout) {
-  qwi_ = qwi;
-  qwo_ = qwo;
-  if (qout) {
-    osz_ = qwo_->getM();
-  }
 }
 
 real Model::binaryLogistic(int32_t target, bool label, real lr) {
@@ -85,11 +78,7 @@ real Model::hierarchicalSoftmax(int32_t target, real lr) {
 }
 
 void Model::computeOutputSoftmax(Vector& hidden, Vector& output) const {
-  if (quant_ && args_->qout) {
-    output.mul(*qwo_, hidden);
-  } else {
-    output.mul(*wo_, hidden);
-  }
+  output.mul(*wo_, hidden);
   real max = output[0], z = 0.0;
   for (int32_t i = 0; i < osz_; i++) {
     max = std::max(output[i], max);
@@ -123,11 +112,7 @@ void Model::computeHidden(const std::vector<int32_t>& input, Vector& hidden) con
   assert(hidden.size() == hsz_);
   hidden.zero();
   for (auto it = input.cbegin(); it != input.cend(); ++it) {
-    if(quant_) {
-      hidden.addRow(*qwi_, *it);
-    } else {
-      hidden.addRow(*wi_, *it);
-    }
+    hidden.addRow(*wi_, *it);
   }
   hidden.mul(1.0 / input.size());
 }
@@ -189,13 +174,7 @@ void Model::dfs(int32_t k, int32_t node, real score,
     return;
   }
 
-  real f;
-  if (quant_ && args_->qout) {
-    f= sigmoid(qwo_->dotRow(hidden, node - osz_));
-  } else {
-    f= sigmoid(wo_->dotRow(hidden, node - osz_));
-  }
-
+  real f = sigmoid(wo_->dotRow(hidden, node - osz_));
   dfs(k, tree[node].left, score + log(1.0 - f), heap, hidden);
   dfs(k, tree[node].right, score + log(f), heap, hidden);
 }

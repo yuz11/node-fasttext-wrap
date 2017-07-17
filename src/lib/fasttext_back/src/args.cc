@@ -36,13 +36,6 @@ Args::Args() {
   label = "__label__";
   verbose = 2;
   pretrainedVectors = "";
-  saveOutput = 0;
-
-  qout = false;
-  retrain = false;
-  qnorm = false;
-  cutoff = 0;
-  dsub = 2;
 }
 
 void Args::parseArgs(int argc, char** argv) {
@@ -60,12 +53,12 @@ void Args::parseArgs(int argc, char** argv) {
   int ai = 2;
   while (ai < argc) {
     if (argv[ai][0] != '-') {
-      std::cerr << "Provided argument without a dash! Usage:" << std::endl;
+      std::cout << "Provided argument without a dash! Usage:" << std::endl;
       printHelp();
       exit(EXIT_FAILURE);
     }
     if (strcmp(argv[ai], "-h") == 0) {
-      std::cerr << "Here is the help! Usage:" << std::endl;
+      std::cout << "Here is the help! Usage:" << std::endl;
       printHelp();
       exit(EXIT_FAILURE);
     } else if (strcmp(argv[ai], "-input") == 0) {
@@ -100,7 +93,7 @@ void Args::parseArgs(int argc, char** argv) {
       } else if (strcmp(argv[ai + 1], "softmax") == 0) {
         loss = loss_name::softmax;
       } else {
-        std::cerr << "Unknown loss: " << argv[ai + 1] << std::endl;
+        std::cout << "Unknown loss: " << argv[ai + 1] << std::endl;
         printHelp();
         exit(EXIT_FAILURE);
       }
@@ -120,27 +113,15 @@ void Args::parseArgs(int argc, char** argv) {
       verbose = atoi(argv[ai + 1]);
     } else if (strcmp(argv[ai], "-pretrainedVectors") == 0) {
       pretrainedVectors = std::string(argv[ai + 1]);
-    } else if (strcmp(argv[ai], "-saveOutput") == 0) {
-      saveOutput = atoi(argv[ai + 1]);
-    } else if (strcmp(argv[ai], "-qnorm") == 0) {
-      qnorm = true; ai--;
-    } else if (strcmp(argv[ai], "-retrain") == 0) {
-      retrain = true; ai--;
-    } else if (strcmp(argv[ai], "-qout") == 0) {
-      qout = true; ai--;
-    } else if (strcmp(argv[ai], "-cutoff") == 0) {
-    cutoff = atoi(argv[ai + 1]);
-    } else if (strcmp(argv[ai], "-dsub") == 0) {
-      dsub = atoi(argv[ai + 1]);
     } else {
-      std::cerr << "Unknown argument: " << argv[ai] << std::endl;
+      std::cout << "Unknown argument: " << argv[ai] << std::endl;
       printHelp();
       exit(EXIT_FAILURE);
     }
     ai += 2;
   }
   if (input.empty() || output.empty()) {
-    std::cerr << "Empty input or output path." << std::endl;
+    std::cout << "Empty input or output path." << std::endl;
     printHelp();
     exit(EXIT_FAILURE);
   }
@@ -153,38 +134,30 @@ void Args::printHelp() {
   std::string lname = "ns";
   if (loss == loss_name::hs) lname = "hs";
   if (loss == loss_name::softmax) lname = "softmax";
-  std::cerr
-    << "\nThe following arguments are mandatory:\n"
+  std::cout
+    << "\n"
+    << "The following arguments are mandatory:\n"
     << "  -input              training file path\n"
-    << "  -output             output file path\n"
-    << "\nThe following arguments are optional:\n"
-    << "  -verbose            verbosity level [" << verbose << "]\n"
-    << "\nThe following arguments for the dictionary are optional:\n"
-    << "  -minCount           minimal number of word occurences [" << minCount << "]\n"
-    << "  -minCountLabel      minimal number of label occurences [" << minCountLabel << "]\n"
-    << "  -wordNgrams         max length of word ngram [" << wordNgrams << "]\n"
-    << "  -bucket             number of buckets [" << bucket << "]\n"
-    << "  -minn               min length of char ngram [" << minn << "]\n"
-    << "  -maxn               max length of char ngram [" << maxn << "]\n"
-    << "  -t                  sampling threshold [" << t << "]\n"
-    << "  -label              labels prefix [" << label << "]\n"
-    << "\nThe following arguments for training are optional:\n"
+    << "  -output             output file path\n\n"
+    << "The following arguments are optional:\n"
     << "  -lr                 learning rate [" << lr << "]\n"
     << "  -lrUpdateRate       change the rate of updates for the learning rate [" << lrUpdateRate << "]\n"
     << "  -dim                size of word vectors [" << dim << "]\n"
     << "  -ws                 size of the context window [" << ws << "]\n"
     << "  -epoch              number of epochs [" << epoch << "]\n"
+    << "  -minCount           minimal number of word occurences [" << minCount << "]\n"
+    << "  -minCountLabel      minimal number of label occurences [" << minCountLabel << "]\n"
     << "  -neg                number of negatives sampled [" << neg << "]\n"
+    << "  -wordNgrams         max length of word ngram [" << wordNgrams << "]\n"
     << "  -loss               loss function {ns, hs, softmax} [ns]\n"
+    << "  -bucket             number of buckets [" << bucket << "]\n"
+    << "  -minn               min length of char ngram [" << minn << "]\n"
+    << "  -maxn               max length of char ngram [" << maxn << "]\n"
     << "  -thread             number of threads [" << thread << "]\n"
-    << "  -pretrainedVectors  pretrained word vectors for supervised learning ["<< pretrainedVectors <<"]\n"
-    << "  -saveOutput         whether output params should be saved [" << saveOutput << "]\n"
-    << "\nThe following arguments for quantization are optional:\n"
-    << "  -cutoff             number of words and ngrams to retain [" << cutoff << "]\n"
-    << "  -retrain            finetune embeddings if a cutoff is applied [" << retrain << "]\n"
-    << "  -qnorm              quantizing the norm separately [" << qnorm << "]\n"
-    << "  -qout               quantizing the classifier [" << qout << "]\n"
-    << "  -dsub               size of each sub-vector [" << dsub << "]\n"
+    << "  -t                  sampling threshold [" << t << "]\n"
+    << "  -label              labels prefix [" << label << "]\n"
+    << "  -verbose            verbosity level [" << verbose << "]\n"
+    << "  -pretrainedVectors  pretrained word vectors for supervised learning []"
     << std::endl;
 }
 

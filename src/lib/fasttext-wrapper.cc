@@ -27,6 +27,20 @@ namespace FastTextWrapper {
 
   std::shared_ptr<fasttext::Model> model_ = NULL;
 
+  bool checkModel(std::istream& in) {
+    int32_t magic;
+    int32_t version;
+    in.read((char*)&(magic), sizeof(int32_t));
+    if (magic != FASTTEXT_FILEFORMAT_MAGIC_INT32) {
+      return false;
+    }
+    in.read((char*)&(version), sizeof(int32_t));
+    if (version != FASTTEXT_VERSION) {
+      return false;
+    }
+    return true;
+  }
+
   bool FastTextWrapper::fileExist(const std::string& filename)
   {
     if (FILE *file = fopen(filename.c_str(), "r"))
@@ -108,7 +122,8 @@ namespace FastTextWrapper {
     {
       std::istringstream input_string(words[i]);
       dict_->getLine(input_string, line, labels, model_->rng);
-      dict_->addNgrams(line, args_->wordNgrams);
+      // New Version done in getLine()
+      //dict_->addNgrams(line,labels, args_->wordNgrams);
       vec.zero();
 
       for (auto it = line.cbegin(); it != line.cend(); ++it)
@@ -174,10 +189,30 @@ namespace FastTextWrapper {
       throw errorMessage;
     }
 
+    if (!checkModel(ifs)) {
+      std::cerr << "Model file has wrong file format!" << std::endl;
+      exit(EXIT_FAILURE);
+    }
+
     args_->load(ifs);
     dict_->load(ifs);
-    input_->load(ifs);
-    output_->load(ifs);
+    bool quant_input;
+    ifs.read((char*) &quant_input, sizeof(bool));
+    if (quant_input) {
+      //TODO
+      //quant_ = true;
+      //qinput_->load(in);
+    } else {
+      input_->load(ifs);
+    }
+
+    ifs.read((char*) &args_->qout, sizeof(bool));
+    if (quant_input && args_->qout) {
+      //TODO
+      //qoutput_->load(in);
+    } else {
+      output_->load(ifs);
+    }
 
     model_ = std::make_shared<fasttext::Model>(input_, output_, args_, 0);
 
@@ -186,7 +221,6 @@ namespace FastTextWrapper {
     } else {
       model_->setTargetCounts(dict_->getCounts(fasttext::entry_type::word));
     }
-
 
     // dictionary
     response["word_count"] = std::to_string( dict_->nwords() );
@@ -264,7 +298,7 @@ namespace FastTextWrapper {
 
     while (ifs.peek() != EOF) {
       dict_->getLine(ifs, line, labels, model_->rng);
-      dict_->addNgrams(line, args_->wordNgrams);
+      //dict_->addNgrams(line,labels, args_->wordNgrams);
       if (labels.size() > 0 && line.size() > 0) {
         std::vector<std::pair<fasttext::real, int32_t>> modelPredictions;
         model_->predict(line, k, modelPredictions);
@@ -294,7 +328,7 @@ namespace FastTextWrapper {
 
     std::istringstream input_string(sentence);
     dict_->getLine(input_string, words, labels, model_->rng);
-    dict_->addNgrams(words, args_->wordNgrams);
+    //dict_->addNgrams(words,labels, args_->wordNgrams);
     if (words.empty()) {
       return;
     }

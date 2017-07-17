@@ -2,6 +2,7 @@
 #include <v8.h>
 #include <iostream>
 #include <map>
+#include <vector>
 
 #include "lib/fasttext-wrapper.h"
 #include "lib/node-argument.h"
