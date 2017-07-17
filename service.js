@@ -4,7 +4,7 @@ var config = {
   input: "data/data_out_c3.txt",
   output: "model"
 }
-/*
+
 FastText.train("supervised", config, function (success, error) {
  
   if(error) {
@@ -15,7 +15,7 @@ FastText.train("supervised", config, function (success, error) {
   console.log(success)
   
 })
-*/
+
 FastText.test("model.bin", "data/data_test_c2.test", 1, function (data, error) {
   if(error) {
     console.log(error)
