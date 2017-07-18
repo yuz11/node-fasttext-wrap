@@ -1,7 +1,7 @@
 {
   "targets": [
     {
-      "target_name": "node-fasttext",
+      "target_name": "node-fasttext-wrapper",
       "sources": [
         "src/lib/node-argument.cc",
         "src/lib/fasttext/src/args.cc",

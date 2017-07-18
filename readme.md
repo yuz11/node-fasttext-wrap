@@ -42,17 +42,20 @@ FastText.test("model.bin", "data/data_test_c2.test", 1, function (data, error) {
 ### Predict
 
 ```
-FastText.predict(
-"dbpedia.bin", 1,
-['cola lukei , cola lukei is a species of flowering plant in the malvaceae family . it is found only in tanzania . its natural habitat is subtropical or tropical moist lowland forests . it is threatened by habitat loss .'],
-function (success, error) {
-
+FastText.test("model.bin", "data/data_test_c2.txt", 1, function (data, error) {
   if(error) {
     console.log(error)
     return;
   }
+  console.log(data)
+  
+});
 
-  console.log(success[0].label == '__label__11')
+FastText.predict("model.bin", 1,['我 要 听 周杰伦 的 歌'],function (success, error) {
+  if(error) {
+    console.log(error)
+    return;
+  }
   console.log(success)
-})
+});
 ```
