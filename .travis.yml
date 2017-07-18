@@ -15,13 +15,7 @@ env:
   - TRAVIS=travis CXX=g++-4.8
 
 before_script:
-  - curl -L "http://downloads.sourceforge.net/shunit2/shunit2-2.0.3.tgz" | tar zx
-  - bash test.sh
-  - npm install -g mocha
   - npm install -g node-gyp
-
-script:
-  - mocha test.js --timeout 18000000 > /dev/null # travis doesn't like large logs output
 
 after_script: 
   - rm -rf data

@@ -1,36 +1,13 @@
 {
-  "name": "node-fasttext",
-  "version": "1.0.0-alpha.2",
-  "description": "A facebookresearch/fastText wrapper in node js.",
+  "name": "node-fasttext-wrapper",
+  "version": "2.0.0",
+  "description": "new facebookresearch/fastText wrapper in nodejs,base on node-fasttext",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha test.js --timeout 18000000",
     "install": "node-gyp configure; node-gyp build"
   },
-  "keywords": [
-    "fasttext",
-    "fb",
-    "fasttext",
-    "node",
-    "fasttext",
-    "node-fasttext",
-    "word",
-    "representation",
-    "learning",
-    "word",
-    "vector",
-    "text",
-    "classification",
-    "supervised",
-    "unsupervised",
-    "classification"
-  ],
-  "author": "Yusuf Syaifudin",
+  "author": "Rafer",
   "dependencies": {
     "bindings": "^1.2.1"
-  },
-  "devDependencies": {
-    "chai": "^3.5.0",
-    "mocha": "^3.2.0"
   }
 }

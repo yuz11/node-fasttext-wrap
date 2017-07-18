@@ -1,6 +1,9 @@
 /** *
- * Author: Yusuf Syaifudin
- * Date: December 6, 2016 12:10 PM
+ * Author: Rafer
+ * Date: July 18, 2017 
+ * ChangeLog:
+ * 1.Ajust to new Fasttext Model.
+ * 2.Model only load Once.
  *
  */
 
@@ -23,7 +26,10 @@ namespace FastTextWrapper
     class FastTextWrapper
     {
       public:
+        FastTextWrapper();
         bool fileExist(const std::string& filename);
+        bool isModelLoaded(){return isLoaded;}
+        std::map<std::string, std::string> getModelInfo();
         std::map<std::string, std::string> train(int argc, char** argv);
         std::vector<std::map<std::string, std::vector<double>>> wordVectors(std::vector<std::string> words);
         std::vector<std::map<std::string, std::vector<double>>> textVectors(std::vector<std::string> words);
@@ -32,6 +38,9 @@ namespace FastTextWrapper
         std::map<std::string, std::string> test(std::string model, std::string testFile, int32_t k);
         void predict(std::string sentence, int32_t k, std::vector<std::pair<fasttext::real,std::string>>& predictions) const;
         std::vector<PredictResult> predict(std::string model, std::vector<std::string> sentences, int32_t k);
+
+      private:
+        bool isLoaded;
     };
 }
 

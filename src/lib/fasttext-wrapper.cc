@@ -1,3 +1,11 @@
+/** *
+ * Author: Rafer
+ * Date: July 18, 2017 
+ * ChangeLog:
+ * 1.Ajust to new Fasttext Model.
+ * 2.Model only load Once.
+ *
+ */
 #include <iostream>
 #include <sstream>
 #include <fenv.h>
@@ -41,6 +49,71 @@ namespace FastTextWrapper {
       return false;
     }
     return true;
+  }
+
+  FastTextWrapper::FastTextWrapper(): isLoaded(false)
+  {
+  
+  }
+
+  std::map<std::string, std::string> FastTextWrapper::getModelInfo()
+  {
+    std::map<std::string, std::string> response;
+    // dictionary
+    response["word_count"] = std::to_string( dict_->nwords() );
+    response["label_count"] = std::to_string( dict_->nlabels() );
+    response["token_count"] = std::to_string( dict_->ntokens() );
+
+    // arguments
+    response["lr"] = std::to_string( args_->lr );
+    response["dim"] = std::to_string( args_->dim );
+    response["ws"] = std::to_string( args_->ws );
+    response["epoch"] = std::to_string( args_->epoch );
+    response["minCount"] = std::to_string( args_->minCount );
+    response["minCountLabel"] = std::to_string( args_->minCountLabel );
+    response["neg"] = std::to_string( args_->neg );
+    response["wordNgrams"] = std::to_string( args_->wordNgrams );
+
+    std::string loss_name = "";
+    if(args_->loss == fasttext::loss_name::hs)
+    {
+      loss_name = "hs";
+    }
+    else if (args_->loss == fasttext::loss_name::ns)
+    {
+      loss_name = "ns";
+    }
+    else if (args_->loss == fasttext::loss_name::softmax)
+    {
+      loss_name = "softmax";
+    }
+
+    std::string model_name = "";
+    if(args_->model == fasttext::model_name::cbow)
+    {
+      model_name = "cbow";
+    }
+    else if (args_->model == fasttext::model_name::sup)
+    {
+      model_name = "supervised";
+    }
+    else if (args_->model == fasttext::model_name::sg)
+    {
+      model_name = "skipgram";
+    }
+
+    response["loss"] = loss_name;
+    response["model"] = model_name;
+    response["bucket"] = std::to_string( args_->bucket );
+    response["minn"] = std::to_string( args_->minn );
+    response["maxn"] = std::to_string( args_->maxn );
+    response["thread"] = std::to_string( args_->thread );
+    response["lrUpdateRate"] = std::to_string( args_->lrUpdateRate );
+    response["t"] = std::to_string( args_->t );
+    response["label"] = args_->label;
+    response["verbose"] = std::to_string( args_->verbose );
+    response["pretrainedVectors"] = args_->pretrainedVectors;
+    return response;
   }
 
   bool FastTextWrapper::fileExist(const std::string& filename)
@@ -161,9 +234,6 @@ namespace FastTextWrapper {
       //   }
       // }
     }
-
-    
-
     return finalResponse;
   }
 
@@ -181,7 +251,10 @@ namespace FastTextWrapper {
 
   std::map<std::string, std::string> FastTextWrapper::loadModel(std::string filename)
   {
-    std::map<std::string, std::string> response;
+    if(isModelLoaded())
+    {
+      return getModelInfo();
+    }
 
     std::ifstream ifs(filename, std::ifstream::binary);
     if (!ifs.is_open()) {
@@ -222,64 +295,10 @@ namespace FastTextWrapper {
       model_->setTargetCounts(dict_->getCounts(fasttext::entry_type::word));
     }
 
-    // dictionary
-    response["word_count"] = std::to_string( dict_->nwords() );
-    response["label_count"] = std::to_string( dict_->nlabels() );
-    response["token_count"] = std::to_string( dict_->ntokens() );
-
-    // arguments
-    response["lr"] = std::to_string( args_->lr );
-    response["dim"] = std::to_string( args_->dim );
-    response["ws"] = std::to_string( args_->ws );
-    response["epoch"] = std::to_string( args_->epoch );
-    response["minCount"] = std::to_string( args_->minCount );
-    response["minCountLabel"] = std::to_string( args_->minCountLabel );
-    response["neg"] = std::to_string( args_->neg );
-    response["wordNgrams"] = std::to_string( args_->wordNgrams );
-
-    std::string loss_name = "";
-    if(args_->loss == fasttext::loss_name::hs)
-    {
-      loss_name = "hs";
-    }
-    else if (args_->loss == fasttext::loss_name::ns)
-    {
-      loss_name = "ns";
-    }
-    else if (args_->loss == fasttext::loss_name::softmax)
-    {
-      loss_name = "softmax";
-    }
-
-    std::string model_name = "";
-    if(args_->model == fasttext::model_name::cbow)
-    {
-      model_name = "cbow";
-    }
-    else if (args_->model == fasttext::model_name::sup)
-    {
-      model_name = "supervised";
-    }
-    else if (args_->model == fasttext::model_name::sg)
-    {
-      model_name = "skipgram";
-    }
-
-    response["loss"] = loss_name;
-    response["model"] = model_name;
-    response["bucket"] = std::to_string( args_->bucket );
-    response["minn"] = std::to_string( args_->minn );
-    response["maxn"] = std::to_string( args_->maxn );
-    response["thread"] = std::to_string( args_->thread );
-    response["lrUpdateRate"] = std::to_string( args_->lrUpdateRate );
-    response["t"] = std::to_string( args_->t );
-    response["label"] = args_->label;
-    response["verbose"] = std::to_string( args_->verbose );
-    response["pretrainedVectors"] = args_->pretrainedVectors;
-
+    isLoaded = true;
     ifs.close();
 
-    return response;
+    return getModelInfo();
   }
 
   std::map<std::string, std::string> FastTextWrapper::test(std::string model, std::string testFile, int32_t k)
